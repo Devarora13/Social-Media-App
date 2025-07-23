@@ -48,4 +48,11 @@ export class NotificationsGateway
       });
     }
   }
+
+  sendNotification(toUserId: string, message: string) {
+    const socketId = this.onlineUsers.get(toUserId);
+    if (socketId) {
+      this.server.to(socketId).emit('notification', { message });
+    }
+  }
 }
