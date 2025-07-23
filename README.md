@@ -307,7 +307,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Dev Arora**
 - GitHub: [@Devarora13](https://github.com/Devarora13)
-- Email: your-email@example.com
+- Email: devarora1309@gmail.com
 
 ## 🎯 Assessment Requirements Fulfilled
 
