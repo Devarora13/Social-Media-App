@@ -6,7 +6,7 @@ import { PostsService } from './posts.service';
 export class PostsProcessor {
   constructor(private readonly postsService: PostsService) {}
 
-  @Process('process-post')
+  @Process('create-post')
   async handlePostProcessing(job: Job) {
     
     try {

@@ -34,12 +34,13 @@ export default function Header({ onNewPost }: HeaderProps) {
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-3">
         <div className="flex items-center justify-between h-16">
           <Link href="/timeline" className="text-xl font-bold text-primary">
             SocialApp
           </Link>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             <Link href="/timeline" className="flex items-center text-gray-600 hover:text-gray-900">
               <Home className="h-5 w-5 mr-1" />
@@ -57,6 +58,24 @@ export default function Header({ onNewPost }: HeaderProps) {
             <Link href="/users" className="flex items-center text-gray-600 hover:text-gray-900">
               <User className="h-5 w-5 mr-1" />
               Users
+            </Link>
+          </nav>
+
+          {/* Mobile Navigation */}
+          <nav className="flex md:hidden items-center space-x-4">
+            <Link href="/timeline" className="flex items-center text-gray-600 hover:text-gray-900">
+              <Home className="h-5 w-5" />
+            </Link>
+            <Link href="/notifications" className="flex items-center text-gray-600 hover:text-gray-900 relative">
+              <Bell className="h-5 w-5" />
+              {notifications.length > 0 && (
+                <Badge variant="destructive" className="absolute -top-2 -right-2 h-4 w-4 rounded-full p-0 text-xs">
+                  {notifications.length}
+                </Badge>
+              )}
+            </Link>
+            <Link href="/users" className="flex items-center text-gray-600 hover:text-gray-900">
+              <User className="h-5 w-5" />
             </Link>
           </nav>
 
@@ -104,17 +123,6 @@ export default function Header({ onNewPost }: HeaderProps) {
                   <Link href={`/profile/${user.username}`}>
                     <User className="mr-2 h-4 w-4" />
                     Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="md:hidden" asChild>
-                  <Link href="/notifications">
-                    <Bell className="mr-2 h-4 w-4" />
-                    Notifications
-                    {notifications.length > 0 && (
-                      <Badge variant="destructive" className="ml-auto h-5 w-5 rounded-full p-0 text-xs">
-                        {notifications.length}
-                      </Badge>
-                    )}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
