@@ -22,10 +22,10 @@ export class PostsService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
+    
     // Add job to queue with 5-second delay
     const job = await this.postQueue.add(
-      'process-post',
+      'create-post',
       {
         userId,
         username: user.username,
@@ -37,7 +37,7 @@ export class PostsService {
     );
 
     return {
-      message: 'Post is being processed and will be published shortly',
+      message: 'Post creation queued successfully',
       jobId: job.id,
     };
   }

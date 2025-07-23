@@ -12,12 +12,12 @@ export class PostsController {
   @Post()
   @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 requests per minute for posts
   async createPost(@Request() req, @Body() createPostDto: CreatePostDto) {
-    return this.postsService.createPost(req.user.id, createPostDto);
+    return this.postsService.createPost(req.user.userId, createPostDto);
   }
 
   @Get('timeline')
   async getTimeline(@Request() req) {
-    return this.postsService.getTimeline(req.user.id);
+    return this.postsService.getTimeline(req.user.userId);
   }
 
   @Get('all')

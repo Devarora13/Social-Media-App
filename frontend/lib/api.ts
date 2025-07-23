@@ -1,5 +1,5 @@
 // API base URL - update this to match your backend
-import { AuthResponse, User, Post, CreatePostResponse } from './types'
+import { AuthResponse, User, Post, CreatePostResponse, Notification } from './types'
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
@@ -12,6 +12,8 @@ export const API_ENDPOINTS = {
   // User
   PROFILE: '/user/profile',
   ALL_USERS: '/user/all',
+  USERS_BATCH: '/user/batch',
+  USER_BY_USERNAME: (username: string) => `/user/${username}`,
   FOLLOW: (userId: string) => `/user/follow/${userId}`,
   UNFOLLOW: (userId: string) => `/user/unfollow/${userId}`,
   
@@ -20,6 +22,9 @@ export const API_ENDPOINTS = {
   TIMELINE: '/posts/timeline',
   ALL_POSTS: '/posts/all',
   USER_POSTS: (userId: string) => `/posts/user/${userId}`,
+  
+  // Notifications
+  NOTIFICATIONS: '/notifications',
 } as const
 
 // Helper function to get auth headers
@@ -50,35 +55,15 @@ export class ApiClient {
       ...options,
     }
 
-    // Debug logging
-    console.log('🔍 API Request:', {
-      url,
-      method: config.method || 'GET',
-      headers: config.headers,
-    })
-
     try {
       const response = await fetch(url, config)
       
-      console.log('📡 API Response:', {
-        url,
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-      })
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        console.error('❌ API Error:', {
-          url,
-          status: response.status,
-          errorData,
-        })
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
       
       const responseText = await response.text()
-      console.log('📄 Raw Response:', responseText)
       
       try {
         return JSON.parse(responseText)
@@ -120,6 +105,17 @@ export class ApiClient {
     return this.request<User[]>(API_ENDPOINTS.ALL_USERS)
   }
 
+  async getUserByUsername(username: string): Promise<User> {
+    return this.request<User>(API_ENDPOINTS.USER_BY_USERNAME(username))
+  }
+
+  async getUsersByIds(ids: string[]): Promise<User[]> {
+    return this.request<User[]>(API_ENDPOINTS.USERS_BATCH, {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    })
+  }
+
   async followUser(userId: string): Promise<{ message: string }> {
     return this.request<{ message: string }>(API_ENDPOINTS.FOLLOW(userId), {
       method: 'POST',
@@ -150,6 +146,11 @@ export class ApiClient {
 
   async getUserPosts(userId: string): Promise<Post[]> {
     return this.request<Post[]>(API_ENDPOINTS.USER_POSTS(userId))
+  }
+
+  // Notifications methods
+  async getNotifications(): Promise<Notification[]> {
+    return this.request<Notification[]>(API_ENDPOINTS.NOTIFICATIONS)
   }
 }
 

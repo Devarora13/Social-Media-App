@@ -18,15 +18,15 @@ interface PostCardProps {
 export default function PostCard({ id, username, avatar, timestamp, title, description }: PostCardProps) {
   // TODO: Implement like, comment, and share functionality
   const handleLike = () => {
-    console.log("Like post:", id)
+    // Handle like functionality
   }
 
   const handleComment = () => {
-    console.log("Comment on post:", id)
+    // Handle comment functionality
   }
 
   const handleShare = () => {
-    console.log("Share post:", id)
+    // Handle share functionality
   }
 
   return (

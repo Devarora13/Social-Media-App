@@ -6,6 +6,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 @WebSocketGateway({
@@ -22,37 +24,51 @@ export class NotificationsGateway
 
   private onlineUsers: Map<string, string> = new Map();
 
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
+
   handleConnection(client: Socket) {
-    const userId = client.handshake.query.userId as string;
-    if (userId) {
-      this.onlineUsers.set(userId, client.id);
-      console.log(`User ${userId} connected: ${client.id}`);
+    try {
+      // Extract JWT token from query params
+      const token = client.handshake.query.token as string;
+      
+      if (!token) {
+        client.disconnect();
+        return;
+      }
+
+      // Verify JWT token
+      const payload = this.jwtService.verify(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+
+      const userId = payload.userId;
+      if (userId) {
+        this.onlineUsers.set(userId, client.id);
+        
+        // Store userId in socket for later use
+        client.data.userId = userId;
+      }
+    } catch (error) {
+      console.error('WebSocket authentication failed:', error);
+      client.disconnect();
     }
   }
 
   handleDisconnect(client: Socket) {
-    for (const [userId, socketId] of this.onlineUsers.entries()) {
-      if (socketId === client.id) {
-        this.onlineUsers.delete(userId);
-        console.log(`User ${userId} disconnected`);
-        break;
-      }
+    const userId = client.data?.userId;
+    if (userId) {
+      this.onlineUsers.delete(userId);
     }
   }
 
-  sendFollowNotification(toUserId: string, fromUsername: string) {
+  sendNotification(toUserId: string, notificationData: any) {
     const socketId = this.onlineUsers.get(toUserId);
+    
     if (socketId) {
-      this.server.to(socketId).emit('followNotification', {
-        message: `${fromUsername} followed you`,
-      });
-    }
-  }
-
-  sendNotification(toUserId: string, message: string) {
-    const socketId = this.onlineUsers.get(toUserId);
-    if (socketId) {
-      this.server.to(socketId).emit('notification', { message });
+      this.server.to(socketId).emit('notification', notificationData);
     }
   }
 }

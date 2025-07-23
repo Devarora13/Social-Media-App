@@ -1,7 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BullModule } from '@nestjs/bull';
-import { JwtModule } from '@nestjs/jwt';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
 import { PostsProcessor } from './posts.processor';
@@ -9,6 +8,7 @@ import { Post, PostSchema } from './schemas/post.schema';
 import { User, UserSchema } from '../user/schemas/user.schema';
 import { UserModule } from '../user/user.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -19,12 +19,9 @@ import { NotificationsModule } from '../notifications/notifications.module';
     BullModule.registerQueue({
       name: 'post-processing',
     }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'your-secret-key',
-      signOptions: { expiresIn: '24h' },
-    }),
     forwardRef(() => UserModule),
     forwardRef(() => NotificationsModule),
+    forwardRef(() => AuthModule), // Import AuthModule for JWT functionality
   ],
   controllers: [PostsController],
   providers: [PostsService, PostsProcessor],

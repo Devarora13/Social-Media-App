@@ -13,10 +13,14 @@ export class NotificationsService {
   ) {}
 
   async sendFollowNotification(toUserId: string, fromUsername: string) {
-    const message = `${fromUsername} followed you.`;
+    const message = `${fromUsername} followed you`;
 
-    // Real-time notification
-    this.gateway.sendFollowNotification(toUserId, fromUsername);
+    // Real-time notification with proper structure
+    this.gateway.sendNotification(toUserId, {
+      type: 'follow',
+      message,
+      fromUserId: fromUsername, // This should be userId, but we'll use username for now
+    });
 
     // Save to DB
     await this.notificationModel.create({ userId: toUserId, message });

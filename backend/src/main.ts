@@ -10,6 +10,5 @@ async function bootstrap() {
   });
   app.use(cookieParser());
   await app.listen(3001); // Changed to port 3001 to avoid conflict
-  console.log('🚀 Backend server running on http://localhost:3001');
 }
 bootstrap();

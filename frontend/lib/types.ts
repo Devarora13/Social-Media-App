@@ -33,3 +33,12 @@ export interface NotificationData {
   fromUserId: string
   postId?: string
 }
+
+export interface Notification {
+  _id: string
+  userId: string
+  message: string
+  isRead: boolean
+  createdAt: string
+  updatedAt: string
+}

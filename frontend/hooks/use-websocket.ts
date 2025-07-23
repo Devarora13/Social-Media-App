@@ -6,7 +6,7 @@ import { useAuth } from '@/context/auth-context'
 import { useToast } from '@/hooks/use-toast'
 import { NotificationData } from '@/lib/types'
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000'
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001'
 
 export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false)
@@ -35,18 +35,14 @@ export function useWebSocket() {
     socketRef.current = socket
 
     socket.on('connect', () => {
-      console.log('Connected to WebSocket server')
       setIsConnected(true)
     })
 
     socket.on('disconnect', () => {
-      console.log('Disconnected from WebSocket server')
       setIsConnected(false)
     })
 
     socket.on('notification', (data: NotificationData) => {
-      console.log('Received notification:', data)
-      
       // Add to notifications list
       setNotifications(prev => [data, ...prev.slice(0, 49)]) // Keep last 50 notifications
       
@@ -59,7 +55,7 @@ export function useWebSocket() {
     })
 
     socket.on('connect_error', (error: any) => {
-      console.error('WebSocket connection error:', error)
+      console.error('❌ WebSocket connection error:', error)
       setIsConnected(false)
     })
 

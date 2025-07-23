@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class AuthService {
@@ -25,12 +26,13 @@ export class AuthService {
       password: hashedPassword,
     });
     
-    const access_token = this.jwtService.sign({ userId: user.id });
+    const userId = (user as any)._id.toString();
+    const access_token = this.jwtService.sign({ userId });
     
     return {
       access_token,
       user: {
-        id: user.id,
+        id: userId,
         email: user.email,
         username: user.username,
         followers: user.followers || [],
@@ -45,12 +47,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     
-    const access_token = this.jwtService.sign({ userId: user.id });
+    const userId = (user as any)._id.toString();
+    const access_token = this.jwtService.sign({ userId });
     
     return {
       access_token,
       user: {
-        id: user.id,
+        id: userId,
         email: user.email,
         username: user.username,
         followers: user.followers || [],

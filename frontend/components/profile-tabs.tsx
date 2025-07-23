@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { User } from "@/lib/types"
 
 interface Post {
   id: string
@@ -13,21 +14,11 @@ interface Post {
 
 interface ProfileTabsProps {
   posts: Post[]
+  followers: User[]
+  following: User[]
 }
 
-// Mock followers and following data
-const mockFollowers = [
-  { username: "alice_wonder", displayName: "Alice Wonder", avatar: "/placeholder.svg?height=40&width=40" },
-  { username: "bob_builder", displayName: "Bob Builder", avatar: "/placeholder.svg?height=40&width=40" },
-  { username: "charlie_brown", displayName: "Charlie Brown", avatar: "/placeholder.svg?height=40&width=40" },
-]
-
-const mockFollowing = [
-  { username: "diana_prince", displayName: "Diana Prince", avatar: "/placeholder.svg?height=40&width=40" },
-  { username: "edward_cullen", displayName: "Edward Cullen", avatar: "/placeholder.svg?height=40&width=40" },
-]
-
-export default function ProfileTabs({ posts }: ProfileTabsProps) {
+export default function ProfileTabs({ posts, followers, following }: ProfileTabsProps) {
   return (
     <Tabs defaultValue="posts" className="w-full">
       <TabsList className="grid w-full grid-cols-3">
@@ -57,51 +48,71 @@ export default function ProfileTabs({ posts }: ProfileTabsProps) {
       </TabsContent>
 
       <TabsContent value="followers" className="space-y-4">
-        {mockFollowers.map((follower) => (
-          <Card key={follower.username}>
-            <CardContent className="pt-6">
-              <div className="flex items-center space-x-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={follower.avatar || "/placeholder.svg"} alt={follower.displayName} />
-                  <AvatarFallback>
-                    {follower.displayName
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold">{follower.displayName}</p>
-                  <p className="text-sm text-gray-500">@{follower.username}</p>
+        {followers.length > 0 ? (
+          followers.map((follower) => (
+            <Card key={follower.id}>
+              <CardContent className="pt-6">
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage 
+                      src={`https://ui-avatars.com/api/?name=${follower.username}&background=0ea5e9&color=fff&size=40`} 
+                      alt={follower.username} 
+                    />
+                    <AvatarFallback>
+                      {follower.username
+                        .split(" ")
+                        .map((n: string) => n[0])
+                        .join("")
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold">{follower.username}</p>
+                    <p className="text-sm text-gray-500">@{follower.username}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No followers yet</p>
+          </div>
+        )}
       </TabsContent>
 
       <TabsContent value="following" className="space-y-4">
-        {mockFollowing.map((following) => (
-          <Card key={following.username}>
-            <CardContent className="pt-6">
-              <div className="flex items-center space-x-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={following.avatar || "/placeholder.svg"} alt={following.displayName} />
-                  <AvatarFallback>
-                    {following.displayName
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold">{following.displayName}</p>
-                  <p className="text-sm text-gray-500">@{following.username}</p>
+        {following.length > 0 ? (
+          following.map((followingUser) => (
+            <Card key={followingUser.id}>
+              <CardContent className="pt-6">
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage 
+                      src={`https://ui-avatars.com/api/?name=${followingUser.username}&background=0ea5e9&color=fff&size=40`} 
+                      alt={followingUser.username} 
+                    />
+                    <AvatarFallback>
+                      {followingUser.username
+                        .split(" ")
+                        .map((n: string) => n[0])
+                        .join("")
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold">{followingUser.username}</p>
+                    <p className="text-sm text-gray-500">@{followingUser.username}</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Not following anyone yet</p>
+          </div>
+        )}
       </TabsContent>
     </Tabs>
   )

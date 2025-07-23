@@ -1,70 +1,125 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Header from "@/components/header"
 import UserCard from "@/components/user-card"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
-
-// Mock users data
-const mockUsers = [
-  {
-    id: "1",
-    username: "janedoe",
-    displayName: "Jane Doe",
-    avatar: "https://ui-avatars.com/api/?name=Jane+Doe&background=0ea5e9&color=fff&size=40",
-    status: "Recently joined",
-    isFollowing: false,
-  },
-  {
-    id: "2",
-    username: "alexsmith",
-    displayName: "Alex Smith",
-    avatar: "https://ui-avatars.com/api/?name=Alex+Smith&background=8b5cf6&color=fff&size=40",
-    status: "Active 2h ago",
-    isFollowing: true,
-  },
-  {
-    id: "3",
-    username: "mariagarcia",
-    displayName: "Maria Garcia",
-    avatar: "https://ui-avatars.com/api/?name=Maria+Garcia&background=f59e0b&color=fff&size=40",
-    status: "Active 1h ago",
-    isFollowing: false,
-  },
-  {
-    id: "4",
-    username: "davidwilson",
-    displayName: "David Wilson",
-    avatar: "https://ui-avatars.com/api/?name=David+Wilson&background=10b981&color=fff&size=40",
-    status: "Active 5h ago",
-    isFollowing: false,
-  },
-  {
-    id: "5",
-    username: "sarahbrown",
-    displayName: "Sarah Brown",
-    avatar: "https://ui-avatars.com/api/?name=Sarah+Brown&background=ef4444&color=fff&size=40",
-    status: "Recently joined",
-    isFollowing: true,
-  },
-]
+import { useAuth } from "@/context/auth-context"
+import { useWebSocket } from "@/hooks/use-websocket"
+import { apiClient } from "@/lib/api"
+import { User } from "@/lib/types"
+import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
 export default function UsersPage() {
-  const [users, setUsers] = useState(mockUsers)
+  const [users, setUsers] = useState<User[]>([])
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [searchQuery, setSearchQuery] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const { user: currentUser, isAuthenticated, updateUser } = useAuth()
+  const { toast } = useToast()
+  const router = useRouter()
+  
+  // Initialize WebSocket for real-time updates
+  useWebSocket()
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login')
+    }
+  }, [isAuthenticated, router])
+
+  // Load all users
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadUsers()
+    }
+  }, [isAuthenticated])
 
   // Filter users based on search query
-  const filteredUsers = users.filter(
-    (user) =>
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.displayName.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredUsers(users)
+    } else {
+      const filtered = users.filter(user =>
+        user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      setFilteredUsers(filtered)
+    }
+  }, [searchQuery, users])
 
-  const handleFollowToggle = (userId: string) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === userId ? { ...user, isFollowing: !user.isFollowing } : user)),
-    )
+  const loadUsers = async () => {
+    try {
+      setIsLoading(true)
+      const allUsers = await apiClient.getAllUsers()
+      // Filter out current user
+      const otherUsers = allUsers.filter(user => user.id !== currentUser?.id)
+      setUsers(otherUsers)
+      setFilteredUsers(otherUsers)
+    } catch (error) {
+      console.error('Failed to load users:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load users",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleFollowToggle = async (userId: string) => {
+    try {
+      const user = users.find(u => u.id === userId)
+      if (!user || !currentUser) return
+
+      const isCurrentlyFollowing = currentUser.following.includes(userId)
+      
+      if (isCurrentlyFollowing) {
+        await apiClient.unfollowUser(userId)
+        
+        // Update current user's following list immediately
+        const updatedCurrentUser = {
+          ...currentUser,
+          following: currentUser.following.filter(id => id !== userId)
+        }
+        updateUser(updatedCurrentUser)
+        
+        toast({
+          title: "Unfollowed",
+          description: `You unfollowed ${user.username}`,
+        })
+      } else {
+        await apiClient.followUser(userId)
+        
+        // Update current user's following list immediately
+        const updatedCurrentUser = {
+          ...currentUser,
+          following: [...currentUser.following, userId]
+        }
+        updateUser(updatedCurrentUser)
+        
+        toast({
+          title: "Following",
+          description: `You are now following ${user.username}`,
+        })
+      }
+      
+    } catch (error) {
+      console.error('Failed to toggle follow:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update follow status",
+        variant: "destructive",
+      })
+    }
+  }
+
+  if (!isAuthenticated) {
+    return null // Will redirect to login
   }
 
   return (
@@ -87,28 +142,35 @@ export default function UsersPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map((user) => (
-              <UserCard
-                key={user.id}
-                id={user.id}
-                username={user.username}
-                displayName={user.displayName}
-                avatar={user.avatar}
-                status={user.status}
-                isFollowing={user.isFollowing}
-                onFollowToggle={handleFollowToggle}
-              />
-            ))
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500">
-                {searchQuery ? `No users found for "${searchQuery}"` : "No users to display"}
-              </p>
-            </div>
-          )}
-        </div>
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-sm text-muted-foreground">Loading users...</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map((user) => (
+                <UserCard
+                  key={user.id}
+                  id={user.id}
+                  username={user.username}
+                  displayName={user.username}
+                  avatar={`https://ui-avatars.com/api/?name=${user.username}&background=0ea5e9&color=fff&size=40`}
+                  status="Active user"
+                  isFollowing={currentUser?.following.includes(user.id) || false}
+                  onFollowToggle={() => handleFollowToggle(user.id)}
+                />
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">
+                  {searchQuery ? "No users found matching your search." : "No users to display."}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   )
