@@ -19,4 +19,34 @@ export class UserService {
   async findById(id: string) {
     return this.userModel.findById(id);
   }
+
+  // Follow a user
+  async followUser(currentUserId: string, targetUserId: string) {
+    if (currentUserId === targetUserId) return null;
+
+    await this.userModel.findByIdAndUpdate(targetUserId, {
+      $addToSet: { followers: currentUserId },
+    });
+
+    await this.userModel.findByIdAndUpdate(currentUserId, {
+      $addToSet: { following: targetUserId },
+    });
+
+    return { message: 'Followed successfully' };
+  }
+
+  // Unfollow a user
+  async unfollowUser(currentUserId: string, targetUserId: string) {
+    if (currentUserId === targetUserId) return null;
+
+    await this.userModel.findByIdAndUpdate(targetUserId, {
+      $pull: { followers: currentUserId },
+    });
+
+    await this.userModel.findByIdAndUpdate(currentUserId, {
+      $pull: { following: targetUserId },
+    });
+
+    return { message: 'Unfollowed successfully' };
+  }
 }
