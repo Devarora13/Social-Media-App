@@ -24,6 +24,10 @@ export class UserService {
     return this.userModel.findById(id);
   }
 
+  async findAll(): Promise<UserDocument[]> {
+    return this.userModel.find().select('-password'); // Exclude password field
+  }
+
   async followUser(currentUserId: string, targetUserId: string) {
     if (currentUserId === targetUserId) {
       throw new Error('You cannot follow yourself');

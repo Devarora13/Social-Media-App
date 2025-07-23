@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/context/auth-context"
 import { LogIn } from "lucide-react"
 
 export default function LoginPage() {
@@ -19,6 +20,7 @@ export default function LoginPage() {
   })
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const { login } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,18 +37,25 @@ export default function LoginPage() {
 
     setIsLoading(true)
 
-    // TODO: API call to authenticate user
-    // const response = await fetch('/api/auth/login', { ... })
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      await login(formData.email, formData.password)
+      
       toast({
         title: "Welcome back!",
         description: "You have been successfully logged in",
       })
+      
       router.push("/timeline")
-    }, 1000)
+    } catch (error) {
+      console.error('Login error:', error)
+      toast({
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

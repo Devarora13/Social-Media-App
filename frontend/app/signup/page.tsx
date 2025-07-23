@@ -4,11 +4,13 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/context/auth-context"
 import { UserPlus } from "lucide-react"
 
 export default function SignupPage() {
@@ -20,6 +22,8 @@ export default function SignupPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const { register } = useAuth()
+  const router = useRouter()
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -60,18 +64,25 @@ export default function SignupPage() {
 
     setIsLoading(true)
 
-    // TODO: API call to create user account
-    // const response = await fetch('/api/auth/signup', { ... })
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      await register(formData.email, formData.username, formData.password)
+      
       toast({
         title: "Account created!",
         description: "Welcome to our social media platform",
       })
-      // TODO: Redirect to timeline or login
-    }, 1000)
+      
+      router.push("/timeline")
+    } catch (error) {
+      console.error('Registration error:', error)
+      toast({
+        title: "Registration failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleInputChange = (field: string, value: string) => {
