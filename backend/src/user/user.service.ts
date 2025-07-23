@@ -25,34 +25,27 @@ export class UserService {
   }
 
   async followUser(currentUserId: string, targetUserId: string) {
-    if (currentUserId === targetUserId) {
-      throw new BadRequestException('You cannot follow yourself');
-    }
+  if (currentUserId === targetUserId) return;
 
-    const currentUser = await this.userModel.findById(currentUserId);
-    const targetUser = await this.userModel.findById(targetUserId);
+  const currentUser = await this.userModel.findById(currentUserId);
+  const targetUser = await this.userModel.findById(targetUserId);
 
-    if (!currentUser || !targetUser) {
-      throw new NotFoundException('User not found');
-    }
+  if (!currentUser || !targetUser) return;
 
-    if (currentUser.following.includes(targetUserId)) {
-      throw new BadRequestException('Already following this user');
-    }
-
-    currentUser.following.push(targetUserId);
+  if (!targetUser.followers.includes(currentUserId)) {
     targetUser.followers.push(currentUserId);
-
-    await currentUser.save();
+    currentUser.following.push(targetUserId);
     await targetUser.save();
+    await currentUser.save();
 
-    this.notificationsGateway.sendNotification(
+    // Send real-time notification
+    this.notificationsGateway.sendFollowNotification(
       targetUserId,
-      `${currentUser.username} started following you`
+      currentUser.username,
     );
-
-    return { message: 'Followed successfully' };
   }
+}
+
 
   async unfollowUser(currentUserId: string, targetUserId: string) {
     const currentUser = await this.userModel.findById(currentUserId);

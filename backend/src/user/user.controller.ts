@@ -1,26 +1,23 @@
-import { Controller, Param, Post, UseGuards, Req, Delete } from '@nestjs/common';
+import { Controller, Post, Delete, Param, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { JwtService } from '@nestjs/jwt';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Request } from 'express';
 
 @Controller('users')
 export class UserController {
-  constructor(private userService: UserService, private jwt: JwtService) {}
+  constructor(private readonly userService: UserService) {}
 
-  private getUserIdFromRequest(req: any): string {
-    const token = req.headers.authorization?.split(' ')[1];
-    const decoded = this.jwt.decode(token) as any;
-    return decoded?.userId;
-  }
-
+  @UseGuards(JwtAuthGuard)
   @Post(':id/follow')
-  async follow(@Param('id') targetUserId: string, @Req() req) {
-    const currentUserId = this.getUserIdFromRequest(req);
+  async follow(@Param('id') targetUserId: string, @Req() req: Request) {
+    const currentUserId = req.user['userId']; // safe from guard
     return this.userService.followUser(currentUserId, targetUserId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id/unfollow')
-  async unfollow(@Param('id') targetUserId: string, @Req() req) {
-    const currentUserId = this.getUserIdFromRequest(req);
+  async unfollow(@Param('id') targetUserId: string, @Req() req: Request) {
+    const currentUserId = req.user['userId'];
     return this.userService.unfollowUser(currentUserId, targetUserId);
   }
 }
