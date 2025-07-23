@@ -14,7 +14,6 @@ A full-stack social media application built with modern technologies.
 - [API Endpoints](#-api-endpoints)
 - [Project Structure](#-project-structure)
 - [Key Implementation Details](#-key-implementation-details)
-- [Screenshots](#-screenshots)
 - [Contributing](#-contributing)
 - [License](#-license)
 
