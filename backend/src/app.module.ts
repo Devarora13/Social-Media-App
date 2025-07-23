@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UserModule } from './user/user.module';
     MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://localhost:27017/socialapp'), 
     AuthModule,
     UserModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

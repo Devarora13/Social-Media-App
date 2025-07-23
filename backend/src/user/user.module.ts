@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
 import { UserController } from './user.controller';
 import { JwtModule } from '@nestjs/jwt';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { JwtModule } from '@nestjs/jwt';
       secret: process.env.JWT_SECRET || 'your_super_secret',
       signOptions: { expiresIn: '7d' },
     }),
+    NotificationsModule,
   ],
   controllers: [UserController],
   providers: [UserService],

@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { Model } from 'mongoose';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private notificationsGateway: NotificationsGateway,
+  ) {}
 
   async createUser(data: Partial<User>) {
     const user = new this.userModel(data);
@@ -20,32 +24,53 @@ export class UserService {
     return this.userModel.findById(id);
   }
 
-  // Follow a user
   async followUser(currentUserId: string, targetUserId: string) {
-    if (currentUserId === targetUserId) return null;
+    if (currentUserId === targetUserId) {
+      throw new BadRequestException('You cannot follow yourself');
+    }
 
-    await this.userModel.findByIdAndUpdate(targetUserId, {
-      $addToSet: { followers: currentUserId },
-    });
+    const currentUser = await this.userModel.findById(currentUserId);
+    const targetUser = await this.userModel.findById(targetUserId);
 
-    await this.userModel.findByIdAndUpdate(currentUserId, {
-      $addToSet: { following: targetUserId },
-    });
+    if (!currentUser || !targetUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (currentUser.following.includes(targetUserId)) {
+      throw new BadRequestException('Already following this user');
+    }
+
+    currentUser.following.push(targetUserId);
+    targetUser.followers.push(currentUserId);
+
+    await currentUser.save();
+    await targetUser.save();
+
+    this.notificationsGateway.sendNotification(
+      targetUserId,
+      `${currentUser.username} started following you`
+    );
 
     return { message: 'Followed successfully' };
   }
 
-  // Unfollow a user
   async unfollowUser(currentUserId: string, targetUserId: string) {
-    if (currentUserId === targetUserId) return null;
+    const currentUser = await this.userModel.findById(currentUserId);
+    const targetUser = await this.userModel.findById(targetUserId);
 
-    await this.userModel.findByIdAndUpdate(targetUserId, {
-      $pull: { followers: currentUserId },
-    });
+    if (!currentUser || !targetUser) {
+      throw new NotFoundException('User not found');
+    }
 
-    await this.userModel.findByIdAndUpdate(currentUserId, {
-      $pull: { following: targetUserId },
-    });
+    currentUser.following = currentUser.following.filter(
+      (id) => id !== targetUserId
+    );
+    targetUser.followers = targetUser.followers.filter(
+      (id) => id !== currentUserId
+    );
+
+    await currentUser.save();
+    await targetUser.save();
 
     return { message: 'Unfollowed successfully' };
   }
