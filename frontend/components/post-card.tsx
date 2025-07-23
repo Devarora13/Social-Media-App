@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Heart, MessageCircle, Share, MoreHorizontal } from "lucide-react"
+import { Heart, MessageCircle, MoreHorizontal } from "lucide-react"
 
 interface PostCardProps {
   id: string
@@ -16,17 +16,13 @@ interface PostCardProps {
 }
 
 export default function PostCard({ id, username, avatar, timestamp, title, description }: PostCardProps) {
-  // TODO: Implement like, comment, and share functionality
+  // TODO: Implement like, comment functionality
   const handleLike = () => {
     // Handle like functionality
   }
 
   const handleComment = () => {
     // Handle comment functionality
-  }
-
-  const handleShare = () => {
-    // Handle share functionality
   }
 
   return (
@@ -69,10 +65,6 @@ export default function PostCard({ id, username, avatar, timestamp, title, descr
                 Comment
               </Button>
             </div>
-            <Button variant="ghost" size="sm" onClick={handleShare} className="text-gray-500 hover:text-green-500">
-              <Share className="h-4 w-4 mr-1" />
-              Share
-            </Button>
           </div>
         </div>
       </CardContent>

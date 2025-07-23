@@ -31,7 +31,7 @@ export class NotificationsGateway
 
   handleConnection(client: Socket) {
     try {
-      // Extract JWT token from query params
+      // To Extract JWT token from query params
       const token = client.handshake.query.token as string;
       
       if (!token) {

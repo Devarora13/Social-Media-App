@@ -55,7 +55,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('unfollow/:userId') // Changed to POST to match frontend expectations
+  @Post('unfollow/:userId') 
   async unfollow(@Param('userId') targetUserId: string, @Req() req: Request) {
     const currentUserId = req.user?.userId;
     if (!currentUserId) {

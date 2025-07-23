@@ -21,7 +21,7 @@ import { AuthModule } from '../auth/auth.module';
     }),
     forwardRef(() => UserModule),
     forwardRef(() => NotificationsModule),
-    forwardRef(() => AuthModule), // Import AuthModule for JWT functionality
+    forwardRef(() => AuthModule), 
   ],
   controllers: [PostsController],
   providers: [PostsService, PostsProcessor],

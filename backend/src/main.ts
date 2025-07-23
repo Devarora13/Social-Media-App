@@ -5,10 +5,10 @@ import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:3000'], // Support both frontend ports
+    origin: ['http://localhost:3001', 'http://localhost:3000'],
     credentials: true,
   });
   app.use(cookieParser());
-  await app.listen(3001); // Changed to port 3001 to avoid conflict
+  await app.listen(process.env.PORT || 3001);
 }
 bootstrap();

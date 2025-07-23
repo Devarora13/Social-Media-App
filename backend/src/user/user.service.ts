@@ -34,7 +34,7 @@ export class UserService {
   }
 
   async findById(id: string): Promise<any> {
-    const user = await this.userModel.findById(id);
+    const user = await this.userModel.findById(id).select('-password');
     if (!user) return null;
     
     // Transform _id to id for frontend compatibility
@@ -93,7 +93,7 @@ export class UserService {
       await currentUser.save();
       await targetUser.save();
 
-      // ✅ Send real-time notification
+      // Send real-time notification
       this.notificationsService.sendNotification(targetUserId, {
         type: 'follow',
         message: `${currentUser.username} followed you`,

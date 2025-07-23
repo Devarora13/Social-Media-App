@@ -22,8 +22,8 @@ export class PostsService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    
-    // Add job to queue with 5-second delay
+
+    // Add job to queue with 5 sec delay
     const job = await this.postQueue.add(
       'create-post',
       {
@@ -32,7 +32,7 @@ export class PostsService {
         postData: createPostDto,
       },
       {
-        delay: 5000, // 5-second delay as required
+        delay: 5000, // 5 sec delay as required
       }
     );
 
