@@ -15,19 +15,19 @@ export default function TimelinePage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [isNewPostModalOpen, setIsNewPostModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
   
   // Initialize WebSocket for real-time updates
   useWebSocket()
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated (but wait for auth to finish loading)
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/login')
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, authLoading, router])
 
   // Load timeline posts
   useEffect(() => {
@@ -75,6 +75,18 @@ export default function TimelinePage() {
         variant: "destructive",
       })
     }
+  }
+
+  // Show loading or redirect
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   if (!isAuthenticated) {

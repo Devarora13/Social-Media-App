@@ -16,19 +16,19 @@ import { useRouter } from "next/navigation"
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const { user: currentUser, isAuthenticated } = useAuth()
+  const { user: currentUser, isAuthenticated, isLoading: authLoading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
   
   // Initialize WebSocket for real-time updates
   useWebSocket()
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated (but wait for auth to finish loading)
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/login')
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, authLoading, router])
 
   // Load notifications
   useEffect(() => {
@@ -89,6 +89,18 @@ export default function NotificationsPage() {
   }
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
+
+  // Show loading or redirect
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!isAuthenticated) {
     return null // Will redirect to login
