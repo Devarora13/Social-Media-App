@@ -1,21 +1,22 @@
 "use client"
 
 import { useEffect } from "react"
-import { redirect } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/auth-context"
 
 export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
     if (!isLoading) {
       if (isAuthenticated) {
-        redirect("/timeline")
+        router.replace("/timeline")
       } else {
-        redirect("/login")
+        router.replace("/login")
       }
     }
-  }, [isAuthenticated, isLoading])
+  }, [isAuthenticated, isLoading, router])
 
   // Show loading while checking auth
   if (isLoading) {
