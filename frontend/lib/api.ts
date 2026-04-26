@@ -1,7 +1,7 @@
 // API base URL - update this to match your backend
 import { AuthResponse, User, Post, CreatePostResponse, Notification } from './types'
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 // API endpoints
 export const API_ENDPOINTS = {
